@@ -1,7 +1,7 @@
 # Langkah Konfigurasi Materi MTCNA
 ## Konfigurasi PPTP Server
 ### Topologi
-[Topologi PPTP Tunnel](https://raw.githubusercontent.com/saifulindo/MTCNA/main/topologi-pptp.jpg)
+![Topologi PPTP Tunnel](https://github.com/saifulindo/MTCNA/raw/main/topologi-pptp.jpg)
 ### Bagian Pertama: Konfigurasi IP Address
 #### R-Server
 Konfigurasi IP Address Router Server
