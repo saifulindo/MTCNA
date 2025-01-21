@@ -43,7 +43,7 @@ save
 ```bash
 ping 192.168.XX.1
 ```
-#### PC-3 ke R-client
+#### PC-2 ke R-client
 ```bash
 ping 192.168.XX+33.1
 ```
