@@ -238,7 +238,7 @@ PC1> ping 172.16.35.1
 ### VPCS PC2 atau PC3
 Konfigurasi IP Address
 ```bash
-PC1> ip 172.16.68.2/24 172.16.68.1
+PC1> ip 172.16.68.2/23 172.16.68.1
 Checking for duplicate address...
 PC1 : 172.16.68.2 255.255.254.0 gateway 172.16.68.1
 ```
@@ -320,5 +320,74 @@ Flags: X - disabled, I - invalid, D - dynamic
  1   172.16.68.1/23     172.16.68.0     ether2
  2 D 10.0.0.2/32        10.0.0.1        l2tp-out1
 ```
+
+
+### Bagian Kelima: Aktifkan L2TP IPSec(Opsional)
+#### Konfigurasi Profile PPP Secret L2TP
+Buat IP Pool untuk L2TP
+```bash
+[admin@MikroTik] > ip pool add name=L2TP-Pool ranges=10.0.0.2-10.0.0.100
+```
+Buat Profile PPP
+```bash
+[admin@MikroTik] > ppp profile add name=L2TP-Profile local-address=10.0.0.1 remote-address=L2TP-Pool
+```
+Atur ppp secret ke profile yang telah dibuat
+```bash
+[admin@MikroTik] > ppp secret set numbers=0 profile=L2TP-Profile local-address=0.0.0.0 remote-address=0.0.0.0
+```
+
+#### Aktifkan IPSec pada kedua Router
+**Office Center**
+```bash
+[admin@MikroTik] > interface l2tp-server server set use-ipsec=yes ipsec-secret=rahasia
+```
+**Office Branch**
+```bash
+[admin@MikroTik] > interface l2tp-client set use-ipsec=yes ipsec-secret=rahasia numbers=0
+```
+#### Lakukan disable enable untuk Dial-up Ulang
+Office Center
+```bash
+[admin@MikroTik] > interface l2tp-server server set enabled=no
+[admin@MikroTik] > interface pr
+Flags: D - dynamic, X - disabled, R - running, S - slave
+ #     NAME                                TYPE       ACTUAL-MTU L2MTU  MAX-L2MTU MAC-ADDRESS
+ 0  R  ether1                              ether            1500                  0C:81:7E:C4:00:00
+ 1  R  ether2                              ether            1500                  0C:81:7E:C4:00:01
+ 2  R  ether3                              ether            1500                  0C:81:7E:C4:00:02
+ 3  R  ether4                              ether            1500                  0C:81:7E:C4:00:03
+[admin@MikroTik] > interface l2tp-server server set enabled=yes
+[admin@MikroTik] > interface pr
+Flags: D - dynamic, X - disabled, R - running, S - slave
+ #     NAME                                TYPE       ACTUAL-MTU L2MTU  MAX-L2MTU MAC-ADDRESS
+ 0  R  ether1                              ether            1500                  0C:81:7E:C4:00:00
+ 1  R  ether2                              ether            1500                  0C:81:7E:C4:00:01
+ 2  R  ether3                              ether            1500                  0C:81:7E:C4:00:02
+ 3  R  ether4                              ether            1500                  0C:81:7E:C4:00:03
+```
+#### Verifikasi kedua Ruter
+Office Center
+```bash
+[admin@MikroTik] > ip address pr
+Flags: X - disabled, I - invalid, D - dynamic
+ #   ADDRESS            NETWORK         INTERFACE
+ 0 D 192.168.255.147/24 192.168.255.0   ether1
+ 1   172.16.35.1/24     172.16.35.0     ether2
+ 2 D 10.0.0.1/32        10.0.0.100      <l2tp-nama-kalian>
+```
+Office Branch
+```bash
+[admin@MikroTik] > ip address pr
+Flags: X - disabled, I - invalid, D - dynamic
+ #   ADDRESS            NETWORK         INTERFACE
+ 0 D 192.168.255.148/24 192.168.255.0   ether1
+ 1   172.16.68.1/23     172.16.68.0     ether2
+ 2 D 10.0.0.100/32      10.0.0.1        l2tp-out1
+```
+
+
+
+
 
 [def]: https://raw.githubusercontent.com/saifulindo/MTCNA/main/topologi-pptp.jpg
