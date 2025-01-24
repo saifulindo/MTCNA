@@ -149,4 +149,107 @@ trace to 192.168.67.2, 8 hops max, press Ctrl+C to stop
  3   *192.168.67.2   17.213 ms (ICMP type:3, code:3, Destination port unreachable)
 ```
 
+## Konfigurasi L2TP Server
+### Bagian Pertama: TOpologi
+![Topologi L2TP](https://raw.githubusercontent.com/saifulindo/MTCNA/refs/heads/main/topologi-l2tp.jpg)
+
+### Bagian Kedua: Konfigurasi IP Address
+#### Office-Center
+Verifikasi Mac Address untuk mengetahui posisi ethernet
+```bash
+[admin@MikroTik] > interface ethernet pr
+Flags: X - disabled, R - running, S - slave
+ #    NAME                                                                            MTU MAC-ADDRESS       ARP
+ 0 R  ether1                                                                         1500 0C:81:7E:C4:00:00 enabled
+ 1 R  ether2                                                                         1500 0C:81:7E:C4:00:01 enabled
+ 2 R  ether3                                                                         1500 0C:81:7E:C4:00:02 enabled
+ 3 R  ether4                                                                         1500 0C:81:7E:C4:00:03 enabled
+```
+Perikas IP DHCP Client
+```bash
+[admin@MikroTik] > ip dhcp-client pr
+Flags: X - disabled, I - invalid, D - dynamic
+ #   INTERFACE                                              USE-PEER-DNS ADD-DEFAULT-ROUTE STATUS        ADDRESS
+ 0   ether1                                                 yes          yes               bound         192.168.255.147/24
+```
+Tambahkan IP Addrees pada interface dan verifikasi
+```bash
+[admin@MikroTik] > ip address add address=172.16.35.1/24 interface=ether2
+[admin@MikroTik] > ip address pr
+Flags: X - disabled, I - invalid, D - dynamic
+ #   ADDRESS            NETWORK         INTERFACE
+ 0 D 192.168.255.147/24 192.168.255.0   ether1
+ 1   172.16.35.1/24     172.16.35.0     ether2
+```
+
+#### Office-Branch
+Verifikasi Mac Address untuk mengetahui posisi ethernet
+```bash
+[admin@MikroTik] > interface ethernet pr
+Flags: X - disabled, R - running, S - slave
+ #    NAME                                                                            MTU MAC-ADDRESS       ARP
+ 0 R  ether1                                                                         1500 0C:E7:1E:E8:00:00 enabled
+ 1 R  ether2                                                                         1500 0C:E7:1E:E8:00:01 enabled
+ 2 R  ether3                                                                         1500 0C:E7:1E:E8:00:02 enabled
+ 3 R  ether4                                                                         1500 0C:E7:1E:E8:00:03 enabled
+```
+Perikas IP DHCP Client
+```bash
+[admin@MikroTik] > ip dhcp-client pr
+Flags: X - disabled, I - invalid, D - dynamic
+ #   INTERFACE                                              USE-PEER-DNS ADD-DEFAULT-ROUTE STATUS        ADDRESS
+ 0   ether1                                                 yes          yes               bound         192.168.255.148/24
+```
+Uji Konektifitas dengan Office Center
+```bash
+[admin@MikroTik] > ping 192.168.255.147
+  SEQ HOST                                     SIZE TTL TIME  STATUS
+    0 192.168.255.147                            56  64 43ms
+    1 192.168.255.147                            56  64 13ms
+    2 192.168.255.147                            56  64 7ms
+    sent=3 received=3 packet-loss=0% min-rtt=7ms avg-rtt=21ms max-rtt=43ms
+```
+Tambahkan IP Addrees pada interface dan verifikasi
+```bash
+[admin@MikroTik] > ip address add address=172.16.68.1/23 interface=ether2
+[admin@MikroTik] > ip address pr
+Flags: X - disabled, I - invalid, D - dynamic
+ #   ADDRESS            NETWORK         INTERFACE
+ 0 D 192.168.255.148/24 192.168.255.0   ether1
+ 1   172.16.68.1/24     172.16.68.0     ether2
+```
+#### VPCS PC1
+Konfigurasi IP Address
+```bash
+PC1> ip 172.16.35.2/24 172.16.35.1
+Checking for duplicate address...
+PC1 : 172.16.35.2 255.255.255.0 gateway 172.16.35.1
+```
+Uji KOnektifitas deng Interface Office Center
+```bash
+PC1> ping 172.16.35.1
+84 bytes from 172.16.35.1 icmp_seq=1 ttl=64 time=5.031 ms
+84 bytes from 172.16.35.1 icmp_seq=2 ttl=64 time=1.729 ms
+84 bytes from 172.16.35.1 icmp_seq=3 ttl=64 time=1.589 ms
+84 bytes from 172.16.35.1 icmp_seq=4 ttl=64 time=1.015 ms
+84 bytes from 172.16.35.1 icmp_seq=5 ttl=64 time=1.372 ms
+```
+
+### VPCS PC2 atau PC3
+Konfigurasi IP Address
+```bash
+PC1> ip 172.16.68.2/24 172.16.68.1
+Checking for duplicate address...
+PC1 : 172.16.68.2 255.255.254.0 gateway 172.16.68.1
+```
+Uji Konektifitas deng Interface Office Branch
+```bash
+PC2> ping 172.16.68.1
+84 bytes from 172.16.68.1 icmp_seq=1 ttl=64 time=4.896 ms
+84 bytes from 172.16.68.1 icmp_seq=2 ttl=64 time=1.171 ms
+84 bytes from 172.16.68.1 icmp_seq=3 ttl=64 time=1.222 ms
+84 bytes from 172.16.68.1 icmp_seq=4 ttl=64 time=2.348 ms
+84 bytes from 172.16.68.1 icmp_seq=5 ttl=64 time=1.457 ms
+```
+
 [def]: https://raw.githubusercontent.com/saifulindo/MTCNA/main/topologi-pptp.jpg
