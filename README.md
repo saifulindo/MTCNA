@@ -150,7 +150,7 @@ trace to 192.168.67.2, 8 hops max, press Ctrl+C to stop
 ```
 
 ## Konfigurasi L2TP Server
-### Bagian Pertama: TOpologi
+### Bagian Pertama: Topologi
 ![Topologi L2TP](https://raw.githubusercontent.com/saifulindo/MTCNA/refs/heads/main/topologi-l2tp.jpg)
 
 ### Bagian Kedua: Konfigurasi IP Address
@@ -250,6 +250,75 @@ PC2> ping 172.16.68.1
 84 bytes from 172.16.68.1 icmp_seq=3 ttl=64 time=1.222 ms
 84 bytes from 172.16.68.1 icmp_seq=4 ttl=64 time=2.348 ms
 84 bytes from 172.16.68.1 icmp_seq=5 ttl=64 time=1.457 ms
+```
+
+### Bagian ketiga: KOnfigurasi L2TP
+#### Office Center
+Aktifkan L2TP Server
+```bash
+[admin@MikroTik] > interface l2tp-server server set enabled=yes
+```
+Tambah user secret
+```bash
+[admin@MikroTik] > ppp secret add name=nama-kalian service=l2tp password=12345678 local-address=10.0.0.1 remote-address=10.0.0.2
+```
+
+#### Office Brance
+Konfigurasi L2TP Client 
+```bash
+[admin@MikroTik] > interface l2tp-client add connect-to=192.168.255.147 user=nama-kalian password=12345678
+```
+Verifikasi L2TP Client
+```bash
+Flags: X - disabled, R - running
+ 0 X  name="l2tp-out1" max-mtu=1450 max-mru=1450 mrru=disabled connect-to=192.168.255.147 user="nama-kalian"
+      password="12345678" profile=default-encryption keepalive-timeout=60 use-peer-dns=no use-ipsec=no ipsec-secret=""
+      allow-fast-path=no add-default-route=no dial-on-demand=no allow=pap,chap,mschap1,mschap2
+```
+Enable L2TP Client yang baru saja ditambahkan dan verifikasi
+```bash
+[admin@MikroTik] > interface l2tp-client set disabled=no numbers=0
+Flags: X - disabled, R - running
+ 0  R name="l2tp-out1" max-mtu=1450 max-mru=1450 mrru=disabled connect-to=192.168.255.147 user="nama-kalian"
+      password="12345678" profile=default-encryption keepalive-timeout=60 use-peer-dns=no use-ipsec=no ipsec-secret=""
+      allow-fast-path=no add-default-route=no dial-on-demand=no allow=pap,chap,mschap1,mschap2
+```
+
+#### Veridikasi Dial-up Interface dan IP Address
+Office Center
+```bash
+[admin@MikroTik] > interface pr
+Flags: D - dynamic, X - disabled, R - running, S - slave
+ #     NAME                                TYPE       ACTUAL-MTU L2MTU  MAX-L2MTU MAC-ADDRESS
+ 0  R  ether1                              ether            1500                  0C:81:7E:C4:00:00
+ 1  R  ether2                              ether            1500                  0C:81:7E:C4:00:01
+ 2  R  ether3                              ether            1500                  0C:81:7E:C4:00:02
+ 3  R  ether4                              ether            1500                  0C:81:7E:C4:00:03
+ 4 DR  <l2tp-nama-kalian>                  l2tp-in          1450
+[admin@MikroTik] > ip address pr
+Flags: X - disabled, I - invalid, D - dynamic
+ #   ADDRESS            NETWORK         INTERFACE
+ 0 D 192.168.255.147/24 192.168.255.0   ether1
+ 1   172.16.35.1/24     172.16.35.0     ether2
+ 2 D 10.0.0.1/32        10.0.0.2        <l2tp-nama-kalian>
+```
+
+Office Branch
+```bash
+[admin@MikroTik] > interface pr
+Flags: D - dynamic, X - disabled, R - running, S - slave
+ #     NAME                                TYPE       ACTUAL-MTU L2MTU  MAX-L2MTU MAC-ADDRESS
+ 0  R  ether1                              ether            1500                  0C:E7:1E:E8:00:00
+ 1  R  ether2                              ether            1500                  0C:E7:1E:E8:00:01
+ 2  R  ether3                              ether            1500                  0C:E7:1E:E8:00:02
+ 3  R  ether4                              ether            1500                  0C:E7:1E:E8:00:03
+ 4  R  l2tp-out1                           l2tp-out         1450
+[admin@MikroTik] > ip address pr
+Flags: X - disabled, I - invalid, D - dynamic
+ #   ADDRESS            NETWORK         INTERFACE
+ 0 D 192.168.255.148/24 192.168.255.0   ether1
+ 1   172.16.68.1/23     172.16.68.0     ether2
+ 2 D 10.0.0.2/32        10.0.0.1        l2tp-out1
 ```
 
 [def]: https://raw.githubusercontent.com/saifulindo/MTCNA/main/topologi-pptp.jpg
