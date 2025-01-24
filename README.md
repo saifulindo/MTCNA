@@ -386,8 +386,9 @@ Flags: X - disabled, I - invalid, D - dynamic
  2 D 10.0.0.100/32      10.0.0.1        l2tp-out1
 ```
 
-### Bagian Keenam: Konfiguras Routing
+### Bagian Keenam: Konfigurasi Routing
 #### Office Center
+**Note**: Gateway menggunakan `10.0.0.100` sesuai yang didapatkan. jika mengunakan IP Pool. ip yang didapatkan yang paling terakhir. jika tanpa ip pool sesuai konfigurasi PPP Secret-nya 10.0.0.2.
 ```bash
 [admin@MikroTik] > ip route add dst-address=172.16.68.0/23 gateway=10.0.0.100
 [admin@MikroTik] > ip route pr
