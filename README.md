@@ -386,8 +386,44 @@ Flags: X - disabled, I - invalid, D - dynamic
  2 D 10.0.0.100/32      10.0.0.1        l2tp-out1
 ```
 
+### Bagian Keenam: Konfiguras Routing
+#### Office Center
+```bash
+[admin@MikroTik] > ip route add dst-address=172.16.68.0/23 gateway=10.0.0.100
+[admin@MikroTik] > ip route pr
+Flags: X - disabled, A - active, D - dynamic, C - connect, S - static, r - rip, b - bgp, o - ospf, m - mme,
+B - blackhole, U - unreachable, P - prohibit
+ #      DST-ADDRESS        PREF-SRC        GATEWAY            DISTANCE
+ 0 ADS  0.0.0.0/0                          192.168.255.2             1
+ 1 ADC  10.0.0.100/32      10.0.0.1        <l2tp-nama-kalian>        0
+ 2 ADC  172.16.35.0/24     172.16.35.1     ether2                    0
+ 3 A S  172.16.68.0/23                     10.0.0.100                1
+ 4 ADC  192.168.255.0/24   192.168.255.147 ether1                    0
+```
+#### Office Branch
+```bash
+[admin@MikroTik] > ip route add dst-address=172.16.35.0/24 gateway=10.0.0.1
+[admin@MikroTik] > ip route pr
+Flags: X - disabled, A - active, D - dynamic, C - connect, S - static, r - rip, b - bgp, o - ospf, m - mme,
+B - blackhole, U - unreachable, P - prohibit
+ #      DST-ADDRESS        PREF-SRC        GATEWAY            DISTANCE
+ 0 ADS  0.0.0.0/0                          192.168.255.2             1
+ 1 ADC  10.0.0.1/32        10.0.0.100      l2tp-out1                 0
+ 2 A S  172.16.35.0/24                     10.0.0.1                  1
+ 3 ADC  172.16.68.0/23     172.16.68.1     ether2                    0
+ 4 ADC  192.168.255.0/24   192.168.255.148 ether1                    0
+```
 
-
+### Bagian Ketujuh: Uji Konektifitas
+Uji Konektifitas Ping PC1 - PC2
+```bash
+PC1> ping 172.16.68.2
+84 bytes from 172.16.68.2 icmp_seq=1 ttl=62 time=17.834 ms
+84 bytes from 172.16.68.2 icmp_seq=2 ttl=62 time=15.312 ms
+84 bytes from 172.16.68.2 icmp_seq=3 ttl=62 time=9.745 ms
+84 bytes from 172.16.68.2 icmp_seq=4 ttl=62 time=19.429 ms
+84 bytes from 172.16.68.2 icmp_seq=5 ttl=62 time=8.247 ms
+```
 
 
 [def]: https://raw.githubusercontent.com/saifulindo/MTCNA/main/topologi-pptp.jpg
