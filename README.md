@@ -252,7 +252,7 @@ PC2> ping 172.16.68.1
 84 bytes from 172.16.68.1 icmp_seq=5 ttl=64 time=1.457 ms
 ```
 
-### Bagian ketiga: KOnfigurasi L2TP
+### Bagian ketiga: Konfigurasi L2TP
 #### Office Center
 Aktifkan L2TP Server
 ```bash
@@ -284,7 +284,7 @@ Flags: X - disabled, R - running
       allow-fast-path=no add-default-route=no dial-on-demand=no allow=pap,chap,mschap1,mschap2
 ```
 
-#### Veridikasi Dial-up Interface dan IP Address
+#### Verifikasi Dial-up Interface dan IP Address
 Office Center
 ```bash
 [admin@MikroTik] > interface pr
