@@ -475,7 +475,6 @@ Konfigurasi IP Address
 Flags: X - disabled, I - invalid, D - dynamic
  #   ADDRESS            NETWORK         INTERFACE
  0   192.168.35.1/24    192.168.35.0    ether2
- 1 D 10.10.10.64/32     10.10.10.1      ppoe-cliet-wates
 ```
 
 ### PC2
