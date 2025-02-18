@@ -427,10 +427,168 @@ PC1> ping 172.16.68.2
 ```
 ## Konfigurasi PPPoE Server
 ### Bagian Pertama: Topologi
-![TOpologi PPPoE Server](/)
+![TOpologi PPPoE Server](https://raw.githubusercontent.com/saifulindo/MTCNA/refs/heads/main/topologi-pppoe.jpg)
 ### Bagian Kedua: Konfigurasi IP Address
 #### R-IP
 Konfiruasi IP Address melalui `ip dhcp-client`:
+**Note:** Sesuaikan dengan inteface yang terpasang.
+```bash
+[admin@MikroTik] > ip dhcp-client add interface=ether4 use-peer-dns=yes add-default-route=yes
+[admin@MikroTik] > ip dhcp-client pr
+Flags: X - disabled, I - invalid, D - dynamic
+ #   INTERFACE                                              USE-PEER-DNS ADD-DEFAULT-ROUTE STATUS        ADDRESS
+ 0   ether4                                                 yes          yes               bound         192.168.255.150/24
+```
+Verifikasi IP Address, dns dan, big-zero
+```bash
+[admin@MikroTik] > ip address pr
+Flags: X - disabled, I - invalid, D - dynamic
+ #   ADDRESS            NETWORK         INTERFACE
+ 0 D 192.168.255.150/24 192.168.255.0   ether4
+[admin@MikroTik] > ip dns pr
+                      servers:
+              dynamic-servers: 192.168.255.2
+               use-doh-server:
+              verify-doh-cert: no
+        allow-remote-requests: yes
+          max-udp-packet-size: 4096
+         query-server-timeout: 2s
+          query-total-timeout: 10s
+       max-concurrent-queries: 100
+  max-concurrent-tcp-sessions: 20
+                   cache-size: 2048KiB
+                cache-max-ttl: 1w
+                   cache-used: 25KiB
+[admin@MikroTik] > ip route pr
+Flags: X - disabled, A - active, D - dynamic, C - connect, S - static, r - rip, b - bgp, o - ospf, m - mme,
+B - blackhole, U - unreachable, P - prohibit
+ #      DST-ADDRESS        PREF-SRC        GATEWAY            DISTANCE
+ 0 ADS  0.0.0.0/0                          192.168.255.2             1
+ 1 ADC  192.168.255.0/24   192.168.255.150 ether4                    0
+```
 
+### R-Customer-1
+Konfigurasi IP Address
+```bash
+[admin@MikroTik] > ip address add address=192.168.35.1/24 interface=ether2
+[admin@MikroTik] > ip address pr
+Flags: X - disabled, I - invalid, D - dynamic
+ #   ADDRESS            NETWORK         INTERFACE
+ 0   192.168.35.1/24    192.168.35.0    ether2
+ 1 D 10.10.10.64/32     10.10.10.1      ppoe-cliet-wates
+```
+
+### PC2
+Konfigurasi IP Address
+```bash
+PC2> ip 192.168.35.2/24 192.168.35.1
+Checking for duplicate address...
+PC1 : 192.168.35.2 255.255.255.0 gateway 192.168.35.1
+
+PC2> ip dns 10.10.10.1
+
+PC2> sh ip
+
+NAME        : PC2[1]
+IP/MASK     : 192.168.35.2/24
+GATEWAY     : 192.168.35.1
+DNS         : 10.10.10.1
+MAC         : 00:50:79:66:68:01
+LPORT       : 10038
+RHOST:PORT  : 127.0.0.1:10039
+MTU:        : 1500
+```
+
+## Bagian Ketiga: Konfigurasi PPPoE Server
+### R-ISP
+Konfigurasi PPPoE Server
+```bash
+interface pppoe-server server add service-name=pppoe-server-wates interface=ether1 keepalive-timeout=900000
+ip pool add name=pool-pppoe-wates ranges=10.10.10.2-10.10.10.64
+ppp secret add name=nama-saya password=12345678 service=pppoe
+ppp profile set numbers=0 local-address=10.10.10.1 remote-address=pool-pppoe-wates dns-server=10.10.10.1
+```
+Sharing internet
+```bash
+[admin@MikroTik] > ip firewall nat add chain=srcnat out-interface=ether4 action=masquerade
+[admin@MikroTik] > ip firewall nat pr
+Flags: X - disabled, I - invalid, D - dynamic
+ 0    chain=srcnat action=masquerade out-interface=ether4
+```
+## Bagian Keempat: Konfigurasi PPPoE Client
+### Customer-1
+Konfigurasi PPPoE Client
+```bash
+interface pppoe-client add name=pppoe-client-water user=nama-saya password=12345678 interface=ether1 use-peer-dns=yes add-default-route=yes
+[admin@MikroTik] > interface pppoe-client monitor numbers=0
+          status: connected
+          uptime: 54m
+    active-links: 1
+        encoding:
+    service-name: pppoe-server-wates
+         ac-name: MikroTik
+          ac-mac: 0C:26:EA:43:00:01
+             mtu: 1480
+             mru: 1480
+   local-address: 10.10.10.64
+  remote-address: 10.10.10.1
+-- [Q quit|D dump|C-z pause]
+```
+Verifikasi IP Address, DNS dan, Big zero
+```bash
+[admin@MikroTik] > ip address pr
+Flags: X - disabled, I - invalid, D - dynamic
+ #   ADDRESS            NETWORK         INTERFACE
+ 0   192.168.35.1/24    192.168.35.0    ether2
+ 1 D 10.10.10.64/32     10.10.10.1      ppoe-cliet-wates
+[admin@MikroTik] > ip dns pr
+                      servers:
+              dynamic-servers: 10.10.10.1
+               use-doh-server:
+              verify-doh-cert: no
+        allow-remote-requests: no
+          max-udp-packet-size: 4096
+         query-server-timeout: 2s
+          query-total-timeout: 10s
+       max-concurrent-queries: 100
+  max-concurrent-tcp-sessions: 20
+                   cache-size: 2048KiB
+                cache-max-ttl: 1w
+                   cache-used: 25KiB
+[admin@MikroTik] > ip route pr
+Flags: X - disabled, A - active, D - dynamic, C - connect, S - static, r - rip, b - bgp, o - ospf, m - mme,
+B - blackhole, U - unreachable, P - prohibit
+ #      DST-ADDRESS        PREF-SRC        GATEWAY            DISTANCE
+ 0 ADS  0.0.0.0/0                          ppoe-cliet-wates          1
+ 1 ADC  10.10.10.1/32      10.10.10.64     ppoe-cliet-wates          0
+ 2 ADC  192.168.35.0/24    192.168.35.1    ether2                    0
+```
+## Bagian Kelima: Sharing internet
+### Customer-1
+```bash
+[admin@MikroTik] > ip firewall nat add chain=srcnat out-interface=ppoe-cliet-wates action=masquerade
+```
+## Bagian Keenam: Pengujian
+### Customer-1
+```bash
+[admin@MikroTik] > ping google.com
+  SEQ HOST                                     SIZE TTL TIME  STATUS
+    0 216.239.38.120                             56 127 83ms
+    1 216.239.38.120                             56 127 43ms
+    2 216.239.38.120                             56 127 48ms
+    3 216.239.38.120                             56 127 30ms
+    sent=4 received=4 packet-loss=0% min-rtt=30ms avg-rtt=51ms max-rtt=83ms
+```
+### PC2
+```bash
+PC2> ping google.com
+google.com ->> forcesafesearch.google.com
+forcesafesearch.google.com resolved to 216.239.38.120
+84 bytes from 216.239.38.120 icmp_seq=1 ttl=126 time=36.585 ms
+84 bytes from 216.239.38.120 icmp_seq=2 ttl=126 time=32.692 ms
+84 bytes from 216.239.38.120 icmp_seq=3 ttl=126 time=40.286 ms
+84 bytes from 216.239.38.120 icmp_seq=4 ttl=126 time=32.784 ms
+84 bytes from 216.239.38.120 icmp_seq=5 ttl=126 time=59.466 ms
+```
 
 [def]: https://raw.githubusercontent.com/saifulindo/MTCNA/main/topologi-pptp.jpg
